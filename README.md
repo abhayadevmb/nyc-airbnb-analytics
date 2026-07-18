@@ -1,78 +1,43 @@
 # NYC Airbnb Analytics
 
-> [!WARNING]
-> WORK IN PROGRESS — Database configuration, raw GUI-driven ingestion, cleaning, and the core visualization assets are complete. Next steps focus on advanced analytical queries and dashboarding.
+> [!TIP]
+> **Project Status**: The data cleaning, charts, and main SQL queries are done! Next up: building an interactive dashboard.
 
 ## Overview
-This repository analyzes 102,024 raw NYC Airbnb listing rows covering geospatial, financial, and host-related attributes. The workflow uses PostgreSQL for storage and Python for cleaning, transformation, and exploratory analysis.
+This project looks at 102,024 Airbnb listings in New York City to understand pricing, locations, and host details. We use PostgreSQL to store the data and Python to clean it and make charts.
 
 ## Tech Stack
-- PostgreSQL 18
-- pgAdmin 4
-- DBeaver Enterprise
-- Python 3 with Pandas, NumPy, Matplotlib, and Seaborn
+- PostgreSQL 18 & DBeaver (for SQL and databases)
+- Python 3 with Pandas & Matplotlib (for data cleaning and charts)
 
-## Database Schema
-```sql
-CREATE TABLE nyc_airbnb_raw (
-    "id" BIGINT,
-    "NAME" TEXT,
-    "host id" BIGINT,
-    "host_identity_verified" TEXT,
-    "host name" TEXT,
-    "neighbourhood group" TEXT,
-    "neighbourhood" TEXT,
-    "lat" DOUBLE PRECISION,
-    "long" DOUBLE PRECISION, 
-    "country" TEXT,
-    "country code" TEXT,
-    "instant_bookable" TEXT,
-    "cancellation_policy" TEXT,
-    "room type" TEXT,
-    "Construction year" DOUBLE PRECISION, 
-    "price" DOUBLE PRECISION,
-    "service fee" DOUBLE PRECISION,
-    "minimum nights" DOUBLE PRECISION,
-    "number of reviews" DOUBLE PRECISION,
-    "last review" TEXT,
-    "reviews per month" DOUBLE PRECISION,
-    "review rate number" DOUBLE PRECISION,
-    "calculated host listings count" DOUBLE PRECISION,
-    "availability 365" DOUBLE PRECISION,
-    "house_rules" TEXT
-);
-```
+## Data Cleaning Steps
+- Filled in missing data (like missing reviews) so we didn't have to throw away rows.
+- Cleaned up the price columns by removing `$` and commas so the database could read them as numbers.
+- Fixed messy text (like mismatched capital letters) in neighborhood names.
+- Standardized all the dates to a simple `YYYY-MM-DD` format.
 
-## Data Cleaning Pipeline
-- Imputed missing values using targeted median and mode strategies for operational columns.
-- Cleaned the `price` and `service fee` fields by removing `$` symbols and commas before casting them to numeric types.
-- Standardized text naming conventions, whitespace, and casing for fields such as `host_identity_verified` and `neighbourhood group`.
-- Normalized mixed date delimiters in `last review` into uniform ISO dates in `YYYY-MM-DD` format.
+## Exploratory Charts
+You can see the code for these in [notebooks/eda.ipynb](notebooks/eda.ipynb). Here are the main takeaways:
 
-## Exploratory Analysis
-The notebook in [notebooks/eda.ipynb](notebooks/eda.ipynb) produces four core visualization assets:
-
-1. Pricing distribution and room-type spread — a histogram of nightly prices (restricted to the core market) paired with a room-type boxplot. The analysis highlights the main concentration of listings in the lower-to-mid price range and the relative pricing spread across room types.
-
+1. **Prices & Room Types**: Most listings are affordable (under $200), but hotel rooms are by far the most expensive option.
 ![Pricing distribution and room-type spread](assets/plots/pricing_distribution.png)
 
-2. Borough supply and price comparison — listing counts and average nightly price by borough. Manhattan and Brooklyn lead in listing volume, while average prices remain relatively close across boroughs.
-
+2. **Boroughs**: Manhattan and Brooklyn have the vast majority of listings, but average prices are actually pretty similar across all boroughs.
 ![Borough supply and price comparison](assets/plots/borough_market.png)
 
-3. Room-type market share and pricing — a pie chart of inventory mix and a bar chart of average nightly price by room type. Entire homes/apartments and private rooms dominate the market, while hotel rooms carry the highest average price.
-
+3. **What are people renting?**: Entire homes and private rooms make up almost the whole market. 
 ![Room-type market share and pricing](assets/plots/room_type_market.png)
 
-4. Minimum-night and review activity — a histogram of minimum-night requirements and a review-volume bar chart by room type. The data shows a short-stay-oriented market, with review activity concentrated in the most common listing categories.
-
+4. **Booking Habits**: NYC is a short-stay market. Most people require a minimum stay of just a few days.
 ![Minimum-night and review activity](assets/plots/booking_activity.png)
+
+---
 
 ## Business Intelligence Queries
 
-### 1. Neighborhood Investment Radar — [challenge_1_neighbourhood_investment_radar.sql](sql/challenge_1_neighbourhood_investment_radar.sql)
+### 1. The Best Neighborhoods to Invest In — [challenge_1_neighbourhood_investment_radar.sql](sql/challenge_1_neighbourhood_investment_radar.sql)
 
-**Business Question**: Which NYC neighborhoods offer the strongest short-term rental pricing power while maintaining enough market depth (100+ listings) to ensure statistical reliability?
+**The Goal**: Find the NYC neighborhoods that charge the highest nightly rates (looking only at areas with at least 100 listings so we know the data is trustworthy).
 
 | rank | neighbourhood | borough | avg\_nightly\_price | total\_listings | avg\_review |
 |------|---------------|-----------|-----------|----------------|------------|
@@ -87,17 +52,16 @@ The notebook in [notebooks/eda.ipynb](notebooks/eda.ipynb) produces four core vi
 | 9 | Queens Village | Queens | 660.12 | 145 | 3.2 |
 | 10 | Brighton Beach | Brooklyn | 658.40 | 168 | 3.4 |
 
-**Key Insights**:
-- Manhattan is not the price leader — Gravesend (Brooklyn) and Briarwood (Queens) command the highest average nightly rates among statistically significant neighborhoods.
-- The Bronx appears twice in the top 5 (Concourse, Longwood), revealing undervalued micro-markets where acquisition costs are lower but rental yields remain competitive.
-- East Elmhurst (483 listings) and Inwood (547 listings) offer the deepest market liquidity in the top 10, making them the safest bets for consistent occupancy.
-- Guest ratings cluster tightly between 3.1 and 3.5 across all top neighborhoods, indicating no quality penalty for choosing outer-borough locations.
+**What We Learned**:
+- Manhattan isn't always the most expensive! Neighborhoods in Brooklyn (Gravesend) and Queens (Briarwood) actually charge more on average.
+- The Bronx is a hidden gem. It has two neighborhoods in the top 5, meaning you can likely buy property cheaper there but still charge high rental rates.
+- East Elmhurst and Inwood have the most listings in the top 10, meaning they are very active and safe areas to invest in.
 
-**Strategic Action**: Prioritize East Elmhurst and Inwood for scale-oriented acquisitions (high volume + strong pricing), and Gravesend/Briarwood for boutique high-yield plays (top pricing + lower acquisition costs).
+**What to do**: If you want to buy a lot of properties safely, look at East Elmhurst and Inwood. If you want to buy cheap property but charge high rent, look at the Bronx or Gravesend.
 
-### 2. Price Tier Market Segmentation — [challenge_2_price_tier_segmentation.sql](sql/challenge_2_price_tier_segmentation.sql)
+### 2. Market Segmentation by Price — [challenge_2_price_tier_segmentation.sql](sql/challenge_2_price_tier_segmentation.sql)
 
-**Business Question**: How does the NYC Airbnb market distribute across price tiers (Budget ≤$300, Mid-Range $301–$600, Premium $601–$900, Luxury $901+), and do higher-priced tiers deliver better guest satisfaction or operational metrics?
+**The Goal**: Break the market into 4 price groups (Budget, Mid-Range, Premium, Luxury) to see if paying more gets you better reviews.
 
 | price\_range | market\_share | total\_listings | avg\_price | avg\_review | avg\_min\_nights | avg\_availability |
 |-------------|--------------|----------------|-----------|------------|----------------|-----------------|
@@ -106,16 +70,15 @@ The notebook in [notebooks/eda.ipynb](notebooks/eda.ipynb) produces four core vi
 | Premium | 25.99 | 26,515 | 749.00 | 3.3 | 7.9 | 139.2 |
 | Luxury | 26.12 | 26,653 | 1,050.13 | 3.3 | 8.0 | 141.1 |
 
-**Key Insights**:
-- The market splits nearly evenly across Mid-Range, Premium, and Luxury (~26% each), with Budget slightly smaller at 21.66% — NYC supports all four price segments without a single dominant tier.
-- Guest satisfaction is completely flat at 3.3 across all tiers — paying 6× more ($1,050 vs. $175) buys zero improvement in ratings, signaling a service quality gap in the upper tiers.
-- Minimum nights and availability barely vary (~8 days, ~141 days), meaning hosts across all price points use near-identical booking strategies.
+**What We Learned**:
+- The market is split very evenly. About 25% of listings fall into each of the four categories. 
+- Paying $1,000 a night gets you the exact same average review score (3.3) as paying $175 a night. Luxury hosts aren't delivering a better guest experience!
 
-**Strategic Action**: Avoid competing on price alone — since satisfaction and operational metrics are identical across tiers, the winning strategy is to differentiate on guest experience (amenities, response times, curated local guides). The Budget tier's smaller 21.66% share suggests moderate undersupply worth exploring.
+**What to do**: Don't just compete on price. Since guests aren't happier at expensive places, a host who focuses on excellent customer service and great amenities can easily steal customers from the "luxury" tier.
 
-### 3. Borough Price Champions — [challenge_3_borough_price_champions.sql](sql/challenge_3_borough_price_champions.sql)
+### 3. The Top Neighborhoods in Each Borough — [challenge_3_borough_price_champions.sql](sql/challenge_3_borough_price_champions.sql)
 
-**Business Question**: For a localized, borough-by-borough expansion strategy, what are the top 3 highest-priced neighborhoods within each borough that have proven market depth (50+ listings)?
+**The Goal**: If we want to expand into all 5 boroughs, what are the top 3 most expensive neighborhoods in each one?
 
 | borough | borough\_rank | neighbourhood | avg\_price | total\_listings | avg\_review |
 |---------|-------------|---------------|-----------|----------------|------------|
@@ -135,18 +98,36 @@ The notebook in [notebooks/eda.ipynb](notebooks/eda.ipynb) produces four core vi
 | Staten Island | 2 | St. George | 651.93 | 125 | 3.4 |
 | Staten Island | 3 | West Brighton | 638.02 | 59 | 3.0 |
 
-**Key Insights**:
-- Brooklyn's Columbia St ($712) is the single most expensive neighborhood in the entire dataset among those with 50+ listings — beating every Manhattan neighborhood.
-- Manhattan's top spots are surprisingly modest (none break $700). The borough's massive supply (44K+ listings) spreads demand and compresses top-tier pricing.
-- Staten Island's Stapleton ($699, 3.7 rating) carries the highest guest satisfaction of any neighborhood in this table, while commanding near-top pricing — a hidden gem for operators prioritizing guest experience.
-- The Bronx is highly competitive on pricing — Throgs Neck ($685) outprices all of Manhattan's top 3, offering the strongest price-to-acquisition-cost ratio in the city.
+**What We Learned**:
+- Columbia St in Brooklyn ($712) is the most expensive neighborhood in the whole city, beating all of Manhattan.
+- Staten Island's Stapleton area has the highest guest satisfaction score (3.7) while still charging near the top prices. It's a hidden gem!
 
-**Strategic Action**: Expand into Columbia St (Brooklyn) and Throgs Neck (Bronx) for premium pricing with lower real estate competition, and Stapleton (Staten Island) for the best satisfaction-to-price ratio in the city.
+**What to do**: Look at expanding into Columbia St (Brooklyn) and Throgs Neck (Bronx) where you can charge high prices without fighting all the competition in Manhattan. Stapleton (Staten Island) is also great for happy guests.
+
+### 4. The Mega-Hosts — [challenge_4_commercial_host_syndicate.sql](sql/challenge_4_commercial_host_syndicate.sql)
+
+**The Goal**: Who are the biggest "Mega-Hosts" in NYC, and how much money are they making? (The city often fines or shuts down these massive hotel-style operations).
+
+| rank | host\_name | total\_listings | boroughs\_operated\_in | avg\_price | estimated\_daily\_revenue |
+|------|-----------|-----------------|----------------------|-----------|-------------------------|
+| 1 | Michael | 878 | 5 | 658.98 | $578,584.00 |
+| 2 | David | 761 | 5 | 645.12 | $490,934.00 |
+| 3 | John | 576 | 5 | 626.38 | $360,793.00 |
+| 4 | Alex | 543 | 5 | 623.45 | $338,534.00 |
+| 5 | Sonder (NYC) | 516 | 2 | 616.57 | $318,150.00 |
+
+**What We Learned**:
+- The top hosts aren't regular people renting a spare room; they are massive companies. The top host manages nearly 900 properties and could make over half a million dollars *in a single night*.
+- The top 4 mega-hosts have properties spread out across all 5 boroughs. 
+- "Sonder (NYC)" is a known corporate hospitality company.
+
+**What to do**: If you are buying an apartment building, check if these mega-hosts operate heavily in it. If the city shuts them down, the building could suddenly have dozens of empty units, which hurts property values. 
+
+---
 
 ## Progress Checklist
-- [x] Database configuration and schema setup
-- [x] Raw GUI-driven ingestion workflow
-- [x] Data cleaning and transformation pipeline
-- [x] Core visualization assets from the EDA notebook
-- [ ] Interactive dashboard creation
-- [ ] Advanced window-function modeling and analytics queries
+- [x] Set up database and load data
+- [x] Clean and fix messy data using Python
+- [x] Make basic charts to understand the market
+- [x] Answer 4 advanced business questions using SQL
+- [ ] Build an interactive dashboard
