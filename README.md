@@ -6,6 +6,8 @@
 
 ![NYC Airbnb Interactive Power BI Dashboard](assets/dashboard_final.png)
 
+*(You can download and interact with the full Power BI file here: [dashboard/nyc-dashboard.pbix](dashboard/nyc-dashboard.pbix))*
+
 ## Overview
 This project looks at 102,024 Airbnb listings in New York City to understand pricing, locations, and host details. We use PostgreSQL to store the data and Python to clean it and make charts.
 
