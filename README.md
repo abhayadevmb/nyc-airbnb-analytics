@@ -1,7 +1,6 @@
 # NYC Airbnb Analytics
 
-> [!TIP]
-> **Project Status**: COMPLETE! All data cleaning, SQL analysis, and interactive dashboard creation phases are finished.
+
 
 ## The Final Dashboard
 
@@ -129,9 +128,4 @@ You can see the code for these in [notebooks/eda.ipynb](notebooks/eda.ipynb). He
 
 ---
 
-## Progress Checklist
-- [x] Set up database and load data
-- [x] Clean and fix messy data using Python
-- [x] Make basic charts to understand the market
-- [x] Answer 4 advanced business questions using SQL
-- [x] Build an interactive Power BI dashboard
+
