@@ -1,7 +1,11 @@
 # NYC Airbnb Analytics
 
 > [!TIP]
-> **Project Status**: The data cleaning, charts, and main SQL queries are done! Next up: building an interactive dashboard.
+> **Project Status**: COMPLETE! All data cleaning, SQL analysis, and interactive dashboard creation phases are finished.
+
+## The Final Dashboard
+
+![NYC Airbnb Interactive Power BI Dashboard](assets/dashboard_final.png)
 
 ## Overview
 This project looks at 102,024 Airbnb listings in New York City to understand pricing, locations, and host details. We use PostgreSQL to store the data and Python to clean it and make charts.
@@ -130,4 +134,4 @@ You can see the code for these in [notebooks/eda.ipynb](notebooks/eda.ipynb). He
 - [x] Clean and fix messy data using Python
 - [x] Make basic charts to understand the market
 - [x] Answer 4 advanced business questions using SQL
-- [ ] Build an interactive dashboard
+- [x] Build an interactive Power BI dashboard
